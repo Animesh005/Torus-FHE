@@ -1,11 +1,11 @@
 #pragma once
 
 #include <iostream>
-#include <tfhe.h>
-#include <tfhe_io.h>
-#include <lwe-functions.h>
-#include <numeric_functions.h>
-#include <tlwe_functions.h>
+#include <tfhe/tfhe.h>
+#include <tfhe/tfhe_io.h>
+#include <tfhe/lwe-functions.h>
+#include <tfhe/numeric_functions.h>
+#include <tfhe/tlwe_functions.h>
 #include <random>
 #include <bits/stdc++.h>
 #include <boost/numeric/ublas/matrix.hpp>
