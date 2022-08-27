@@ -1,5 +1,4 @@
-# SubmissionCodes
-Contains artifacts related to the submission
+#Torus-FHE
 
 # Installation
 
