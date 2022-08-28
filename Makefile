@@ -20,7 +20,7 @@ bin/convert: bin/threshold_decryption_functions.o src/Convert.cpp
 	${TFHE_OPTIONS} g++ -g -fopenmp src/Convert.cpp bin/threshold_decryption_functions.o -o bin/convert ${TFHE_LIB} ${BLAS_LIB}
 
 bin/threshold_decryption_functions.o: src/threshold_decryption_functions.cpp
-	${TFHE_OPTIONS} g++ -g -fopenmp src/threshold_decryption_functions.cpp -o bin/threshold_decryption_functions.o ${BLAS_LIB}
+	${TFHE_OPTIONS} g++ -g -O3 -c -fopenmp src/threshold_decryption_functions.cpp -o bin/threshold_decryption_functions.o ${BLAS_LIB}
 
 bin/keygen: src/KeyGen.cpp
 	${TFHE_OPTIONS} g++ src/KeyGen.cpp -o bin/keygen ${TFHE_LIB}
