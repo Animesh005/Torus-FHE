@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "tfhe/tfhe.h"
+#include <tfhe/tfhe.h>
 #include <tfhe/tfhe_io.h>
 #include <tfhe/lwe-functions.h>
 #include <tfhe/numeric_functions.h>
