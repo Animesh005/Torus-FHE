@@ -587,12 +587,12 @@ void inputDataSet()
     fclose(cloudKeyFile);
 
     int col_size = 14;
-    int train_row_size = 60000;
-    int test_row_size = 10000;
+    int train_row_size = 5;
+    int test_row_size = 1;
     std::vector<std::vector<int>> row(train_row_size + test_row_size);
     std::string line, word, temp;
 
-    std::ifstream read("test/bootstrap_modules/data1.csv"); 
+    std::ifstream read("test/bootstrap_modules/data.csv"); 
     read>>line;
 
     LweSample ***cipher_train_dataset = new LweSample**[train_row_size];
