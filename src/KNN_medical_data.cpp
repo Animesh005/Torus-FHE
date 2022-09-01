@@ -302,7 +302,7 @@ void encrypt_dataset(LweSample **ciphers, std::vector<int>&row){
     clock_t end_Enc = clock();
     double time_Enc = ((double) end_Enc - begin_Enc)/CLOCKS_PER_SEC;
 
-    cout << "Encryption Time: " << time_Enc << "seconds" << endl;
+    std::cout << "Encryption Time: " << time_Enc << "seconds" << std::endl;
 
     delete_gate_bootstrapping_secret_keyset(key_);
     delete_gate_bootstrapping_parameters(params_);
