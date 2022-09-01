@@ -613,6 +613,8 @@ void inputDataSet()
     }
 
     int row_count = 0;
+    clock_t beg_enc_data = clock();
+
     while (read >> line)
     {
         row[row_count] = std::vector<int>(col_size);
@@ -631,8 +633,6 @@ void inputDataSet()
         }
         //std::cout<<"\n";
 
-        clock_t beg_enc_data = clock();
-
         if(row_count < train_row_size){
             encrypt_dataset(cipher_train_dataset[row_count], row[row_count]);
             // decrypt_ciphers(cipher_train_dataset[row_count], col_size);
@@ -642,10 +642,6 @@ void inputDataSet()
             // decrypt_ciphers(cipher_test_dataset[row_count-train_row_size], col_size);
         }
 
-        clock_t end_enc_data = clock();
-        double time_Enc_data = ((double) end_enc_data - beg_enc_data)/CLOCKS_PER_SEC;
-
-        std::cout << "Total Encryption Time: " << time_Enc_data << " seconds" << std::endl;
 
         //encrypt_dataset(cipher_dataset[row_count], row[row_count]);
         //distance(cipher_dataset[row_count][1], cipher_dataset[row_count][2], 32);
@@ -659,6 +655,11 @@ void inputDataSet()
     if(row_count == (train_row_size + test_row_size))
         break;
     }
+
+    clock_t end_enc_data = clock();
+    double time_Enc_data = ((double) end_enc_data - beg_enc_data)/CLOCKS_PER_SEC;
+
+    std::cout << "Total Encryption Time: " << time_Enc_data << " seconds" << std::endl;
 
 
     int K = 5;
