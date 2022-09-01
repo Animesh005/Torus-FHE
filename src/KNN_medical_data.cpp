@@ -290,12 +290,19 @@ void encrypt_dataset(LweSample **ciphers, std::vector<int>&row){
     auto params_ = new_tfheGateBootstrappingParameterSet_fromFile(paramFile);
     fclose(paramFile); 
 
+    clock_t begin_Enc = clock();
+
     for(int i=0; i<row.size();i++){
 
         for(int j = 0; j < 32; j++){
             bootsSymEncrypt(&ciphers[i][31-j], (row[i] >> j) & 1, key_);
         }
     }
+
+    clock_t end_Enc = clock();
+    double time_Enc = ((double) end_Enc - begin_Enc)/CLOCKS_PER_SEC;
+
+    cout << "Encryption Time: " << time_Enc << "seconds" << endl;
 
     delete_gate_bootstrapping_secret_keyset(key_);
     delete_gate_bootstrapping_parameters(params_);
@@ -580,8 +587,8 @@ void inputDataSet()
     fclose(cloudKeyFile);
 
     int col_size = 14;
-    int train_row_size = 60;
-    int test_row_size = 10;
+    int train_row_size = 5;
+    int test_row_size = 1;
     std::vector<std::vector<int>> row(train_row_size + test_row_size);
     std::string line, word, temp;
 
