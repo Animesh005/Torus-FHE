@@ -14,6 +14,8 @@
 
 #define MSIZE 2
 
+// urgent todo: use OpenMP loop collapse
+
 int main(int argc, char *argv[]){
 	if(argc < 4){
 		std::cout << "Please provide values of t, p and party-ids of collaborating t parties as space separated integers in the command line for t-out-of-p threshold decryption.\n";
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]){
 	for(int i = 0; i < 32; i++){
 		mu->coefsT[i] += modSwitchToTorus32((msg >> i) & 1, MSIZE);
 	}
-	tLweSymEncrypt(ciphertext, mu, 3e-8, key);
+	tLweSymEncrypt(ciphertext, mu, 0.001, key);
 
     /* Direct Decryption */
     int dmsg = 0;
@@ -72,31 +74,28 @@ int main(int argc, char *argv[]){
     std::cout << "Direct Decryption result: " << dmsg << std::endl;
 
     /* Threshold Decryption */
+	struct timespec share_start = {0, 0};
+	struct timespec share_end = {0, 0};
+	// unsigned int high, low;
+	clock_gettime(CLOCK_MONOTONIC, &share_start);
+	// __asm__ __volatile__("xorl %%eax,%%eax\n cpuid \n" ::: "%eax", "%ebx", "%ecx", "%edx");
+    // __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
+	// auto clock_start_sharing = (static_cast<uint64_t>(high) << 32) | low;
+    shareSecret2(t, p, key, params);
+    // __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
+    // auto clock_stop_sharing = (static_cast<uint64_t>(high) << 32) | low;
+	clock_gettime(CLOCK_MONOTONIC, &share_end);
 
-	// struct timespec share_start = {0, 0};
-	// struct timespec share_end = {0, 0};
-	// clock_gettime(CLOCK_MONOTONIC, &share_start);	/*measure time in seconds*/
-	unsigned int high, low;
-	__asm__ __volatile__("xorl %%eax,%%eax\n cpuid \n" ::: "%eax", "%ebx", "%ecx", "%edx");
-    __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
-	auto clock_start_sharing = (static_cast<uint64_t>(high) << 32) | low;	/*measure time in clock cycles*/
-
-    shareSecret(t, p, key, params);
-
-    __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
-    auto clock_stop_sharing = (static_cast<uint64_t>(high) << 32) | low;
-	// clock_gettime(CLOCK_MONOTONIC, &share_end);
-
-	// std::cout << "Secret sharing time:" << (((double)share_end.tv_nsec + 1.0e+9 * share_end.tv_sec) - ((double)share_start.tv_nsec + 1.0e+9 * share_start.tv_sec)) * 1.0e-9 << "sec" << std::endl;
-    auto cycle_count_sharing = clock_stop_sharing - clock_start_sharing;
-    std::cout << "Secret Sharing Time: " << cycle_count_sharing << " cycles" << std::endl;
+	std::cout << "Secret sharing time:" << (((double)share_end.tv_nsec + 1.0e+9 * share_end.tv_sec) - ((double)share_start.tv_nsec + 1.0e+9 * share_start.tv_sec)) * 1.0e-9 << "sec" << std::endl;
+    // auto cycle_count_sharing = clock_stop_sharing - clock_start_sharing;
+    // std::cout << "Secret Sharing Time: " << cycle_count_sharing << " cycles" << std::endl;
     // struct timespec start_time = {0, 0};
     // struct timespec end_time = {0, 0};
     
     int rbit;
     int result_msg;
     TorusPolynomial* result_plaintext = new_TorusPolynomial(params->N);
-    double bound = 0.05;
+    double bound = 0.0625;
     unsigned int lo,hi;
 
  //    while(bound > 1e-3){
@@ -128,7 +127,7 @@ int main(int argc, char *argv[]){
 	// for(int i = 0; i < t; i++){
 	// 	result_plaintexts[i] = new_TorusPolynomial(params->N);
 	// }
-	while(bound > 1e-5){
+	while(bound > 1e-3){
 		std::cout << "Noise: " << bound << std::endl;
 		for(int i = 0; i < t; i++){
 			cycle_counts_partial[i] = 0;
@@ -137,11 +136,9 @@ int main(int argc, char *argv[]){
 				partial_ciphertexts[i]->coefsT[j] = 0;
 			}
 		}
-		/* Each party performs partial decryption on its own */
 		for(int i = 0; i < t; i++){
 			partialDecrypt(ciphertext, params, partial_ciphertexts[i], cycle_counts_partial, i, subset, t, p, bound);
 		}
-		/* Each party performs final decryption on its own */
 		for(int i = 0; i < t; i++){
 			finalDecrypt(ciphertext, partial_ciphertexts, params, cycle_counts_final, i, subset, t, p);
 		}

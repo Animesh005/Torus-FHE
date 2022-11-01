@@ -290,19 +290,12 @@ void encrypt_dataset(LweSample **ciphers, std::vector<int>&row){
     auto params_ = new_tfheGateBootstrappingParameterSet_fromFile(paramFile);
     fclose(paramFile); 
 
-    clock_t begin_Enc = clock();
-
     for(int i=0; i<row.size();i++){
 
         for(int j = 0; j < 32; j++){
             bootsSymEncrypt(&ciphers[i][31-j], (row[i] >> j) & 1, key_);
         }
     }
-
-    clock_t end_Enc = clock();
-    double time_Enc = ((double) end_Enc - begin_Enc)/CLOCKS_PER_SEC;
-
-    std::cout << "Encryption Time: " << time_Enc << " seconds" << std::endl;
 
     delete_gate_bootstrapping_secret_keyset(key_);
     delete_gate_bootstrapping_parameters(params_);
@@ -587,12 +580,12 @@ void inputDataSet()
     fclose(cloudKeyFile);
 
     int col_size = 14;
-    int train_row_size = 60000;
-    int test_row_size = 10000;
+    int train_row_size = 5;
+    int test_row_size = 1;
     std::vector<std::vector<int>> row(train_row_size + test_row_size);
     std::string line, word, temp;
 
-    std::ifstream read("test/bootstrap_modules/data.csv"); 
+    std::ifstream read("test/bootstrap_modules/data1.csv"); 
     read>>line;
 
     LweSample ***cipher_train_dataset = new LweSample**[train_row_size];
@@ -613,8 +606,6 @@ void inputDataSet()
     }
 
     int row_count = 0;
-    clock_t beg_enc_data = clock();
-
     while (read >> line)
     {
         row[row_count] = std::vector<int>(col_size);
@@ -635,13 +626,12 @@ void inputDataSet()
 
         if(row_count < train_row_size){
             encrypt_dataset(cipher_train_dataset[row_count], row[row_count]);
-            // decrypt_ciphers(cipher_train_dataset[row_count], col_size);
+            decrypt_ciphers(cipher_train_dataset[row_count], col_size);
         }
         else{
             encrypt_dataset(cipher_test_dataset[row_count-train_row_size], row[row_count]);
-            // decrypt_ciphers(cipher_test_dataset[row_count-train_row_size], col_size);
+            decrypt_ciphers(cipher_test_dataset[row_count-train_row_size], col_size);
         }
-
 
         //encrypt_dataset(cipher_dataset[row_count], row[row_count]);
         //distance(cipher_dataset[row_count][1], cipher_dataset[row_count][2], 32);
@@ -655,11 +645,6 @@ void inputDataSet()
     if(row_count == (train_row_size + test_row_size))
         break;
     }
-
-    clock_t end_enc_data = clock();
-    double time_Enc_data = ((double) end_enc_data - beg_enc_data)/CLOCKS_PER_SEC;
-
-    std::cout << "Total Encryption Time: " << time_Enc_data << " seconds" << std::endl;
 
 
     int K = 5;

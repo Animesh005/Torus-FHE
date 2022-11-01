@@ -89,27 +89,43 @@ int main(){
 
 	TLweSample *resultOfEvalT;
 	TorusPolynomial *result_plaintext;
-
+  TorusPolynomial *direct_result_plaintext;
 	TLweKeyFromLweKey(key->lwe_key, tlwe_key);
-
+  for(int i = 0; i < 20; i++){
+    std::cout << tlwe_key->key[0].coefs[i] << " ";
+  }
+  std::cout << "\n";
     shareSecret(3, 5, tlwe_key, tlwe_params);
-
+  for(int i = 0; i < 20; i++){
+    std::cout << tlwe_key->key[0].coefs[i] << " ";
+  }
+  std::cout << "\n";
     double bound = 0.0125;
-    int result_msg;
+    int result_msg, direct_result_msg, dbit, tbit;
     std::vector<int> subset{1,2,4};
     while(bound > 1e-3){
 	    result_msg = 0;
+      direct_result_msg = 0;
 	    //Assuming k = 1, n = N = 1024, and converting lwe ciphertext of each of the result bit into corresponding ring-lwe ciphertext one by one and decrypting
-	    //TODO: Pack all 32 lwe ciphertexts into one tlwe ciphertext and call threshold_decryption once
-	    //NEXT TODO: Do the same but with k > 1
 		for (int i = 0; i < 32; i++){
 			resultOfEvalT = new_TLweSample(tlwe_params);
 			TLweFromLwe(resultOfEvalT, &resultOfEval[i], tlwe_params);
 			result_plaintext = new_TorusPolynomial(tlwe_params->N);
+      direct_result_plaintext = new_TorusPolynomial(tlwe_params->N);
+      tLwePhase(direct_result_plaintext, resultOfEvalT, tlwe_key);
+      Torus32 Tdbit = direct_result_plaintext->coefsT[0];
+      // tLweSymDecrypt(direct_result_plaintext, resultOfEvalT, tlwe_key, MSIZE);
+      // dbit = modSwitchFromTorus32(direct_result_plaintext->coefsT[0], MSIZE);
+      // Torus32 Tdbit = tLweSymDecryptT(resultOfEvalT, tlwe_key, MSIZE);
+      dbit = (Tdbit > 0) ? 1 : 0;
+      direct_result_msg += dbit << i;
 			thresholdDecrypt(result_plaintext, resultOfEvalT, tlwe_params, subset, 3, 5, bound);
-			result_msg += (result_plaintext->coefsT[0] > 0 ? 1 : 0) << i;
+      tbit = result_plaintext->coefsT[0] > 0 ? 1 : 0;
+			result_msg += tbit << i;
+      std::cout << "dbit: " << dbit << "  tbit: " << tbit << "\n";
 		}
 		std::cout << "bound: " << bound << "   result_msg: " << result_msg << "\n";
+   std::cout << "bound: " << bound << "   direct_result_msg: " << direct_result_msg << "\n";
 		bound /= 2;
 	}
 }
